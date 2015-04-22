@@ -1,0 +1,71 @@
+Last login: Wed Apr 22 09:10:56 on ttys000
+Apple:~ drew_russell$ vsphere
+
+The following vSphere objects are currently supported:
+
+- vCenter 5.x
+- ESXi 5.x
+
+Which object would you like to scan (vCenter, ESXi, Both): both
+
+Please enter the vCenter IP Address: 10.255.55.5
+
+
+Enter the number of ESXi hosts you would like to check : 1
+
+Please enter the starting ESXi Host IP Address: 10.255.154.144
+
+*** Executing script. This may take several minutes.... ***
+
+ESXi (10.255.154.144) may experience issues due to the following being blocked:
+
+- PAM Active Directory Authentication - Kerberos (Port 88)
+- NFS Client - RPC Portmapper (Port 111)
+- Internal Communication Port (Port 8302)
+- DVS Portion Information (Port 8301)
+- DHCP Client (Port 68)
+- Traffic between hosts for vSphere High Availability (HA) (Port 8182)
+- CIM transactions over HTTP (Port 5988)
+- SSH Server (Port 22)
+- RFP protocol which is used by management tools such as VNC (Port 5900)
+- CIM Service Location Protocol (SLP) (Port 427)
+- PAM Active Directory Authentication - Kerberos (Port 464)
+- PAM Active Directory Authentication (Port 445)
+- Transactions to iSCSI storage devices (Port 3260)
+- NTP Client (Port 123)
+- DVS Port Information (Port 8200)
+- PAM Active Directory Authentication - Kerberos (Port 389)
+- SNMP Polling (Port 161)
+- SNMP Trap Send (Port 162)
+- Bi-directional communication on TCP/UDP porsts is required between the ESXi host and the AD Domain Controller (Port 1024)
+- DNS Client (Port 53)
+- Transactions from NFS storage devices (Port 2049)
+- Remote syslog logging (Port 514)
+
+vCenter (10.255.55.5) may experience issues due to the following being blocked:
+
+- DPM and IPMI (iLO/BMC) ASF Remote Management and Control Protocol (Port 623)
+- Bi-directional RPC communication on dynamic TCP ports (Port 1024)
+- VMware Virtual Center Management Web Services (Port 8443)
+- Internal Communication Port (Port 8086)
+- Internal Communication Port (Port 8006)
+- Internal Service Diagnostics/SDK (Port 8085)
+- Inventory Service Linked Mode Communication (Port 10109)
+- AJP Port (Port 8009)
+- Linked Mode (Port 135)
+- Internal Communication Port (Port 8005)
+- SNMP Polling (Port 161)
+- SNMP Trap Send (Port 162)
+- Inventory Service HTTPS (Port 10443)
+- Host access to other hosts for migration and provisioning (Port 902)
+- Email notifications (Port 25)
+- CIM Transactions over HTTPs (Port 5988)
+- Internal Service Diagnostics (Port 8087)
+- VMware Virtual Center Management Web Services (Port 8080)
+- vCenter Microsoft SQL Server Database (Port 1433)
+- Internal Service Diagnostics (Port 8083)
+- SDK Tunneling Port (Port 8089)
+- DNS lookups (Port 53)
+- Web service used to add host to AD domain (Port 51915)
+- Linked Mode, Java Discovery Port (Port 7500)
+- vCenter Oracle Database (Port 1521)
