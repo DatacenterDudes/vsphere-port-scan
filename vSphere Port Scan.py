@@ -1,17 +1,21 @@
-import socket, struct
+import socket, struct, platform
 
 #region Global Variables
 
 blocked_ports = []
 open_ports = []
 
-def port_check(port, ip_address,vsphere_object):
+#Set the default timeout value to two seconds
+socket.setdefaulttimeout(2)
 
-    global vsphere_object_ip_address
+#endregion
 
-    for element in port:
+def port_check(ports, ip_address, vsphere_object):
+
+
+    for element in ports:
         v_port = int(element)
-
+        #connect to the ports
         sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         result = sock.connect_ex((ip_address,v_port))
         if result == 0:
@@ -19,11 +23,11 @@ def port_check(port, ip_address,vsphere_object):
         else:
            blocked_ports.append(v_port)
 
-    print(vsphere_object + ' (' + vsphere_object_ip_address + ')' + ' may experience issues due to the following being blocked:')
+    print(vsphere_object + ' (' + ip_address + ')' + ' may experience issues due to the following being blocked:')
     print('')
 
     for i in blocked_ports:
-        for key, value in port.items():
+        for key, value in ports.items():
          if str(i) == key:
             print '- '+ str(value) + '' + ' (Port ' + str(i) + ')'
     print('')
@@ -31,34 +35,31 @@ def port_check(port, ip_address,vsphere_object):
     #Reset the block ports list back to zero
     del blocked_ports[:]
 
-def esxi_ip():
+def esxi__increase_ip():
 
-        global esxi_increase_ip
-
-        #Convert the first IP address to an integer
-        esxi_initial_int = ip2int(esxi_increase_ip)
-
-        #Second host IP Address Address
-        esxi_increase_int = (esxi_initial_int + 1)
-        esxi_increase_ip = int2ip(esxi_increase_int)
-        esxi_host_ip.append(esxi_increase_ip)
-
-#Set the default timeout value to two seconds
-socket.setdefaulttimeout(2)
+    # x.x.x.x string -> integer
+    ip2int = lambda ipstr: struct.unpack('!I', socket.inet_aton(ipstr))[0]
+    # x.x.x.x string -> integer
+    int2ip = lambda n: socket.inet_ntoa(struct.pack('!I', n))
 
 
-def vcenter_user_input():
+    #Convert the first IP address to an integer
+    esxi_initial_int = ip2int(esxi_input.initial_ip)
 
-    global total_esxi_hosts
-    global vcenter_ip_address
+    #Second host IP Address Address
+    esxi_increase_int = (esxi_initial_int + 1)
+    esxi_increase_ip = int2ip(esxi_increase_int)
+    esxi_input.ip.append(esxi_increase_ip)
+
+def vcenter_input():
 
     while True:
         try:
             print''
-            vcenter_ip_address = raw_input('Please enter the vCenter IP Address: ')
+            vcenter_input.ip = raw_input('Please enter the vCenter IP Address: ')
             print('')
             # Check for a valid IP Address
-            socket.inet_aton(vcenter_ip_address)
+            socket.inet_aton(vcenter_input.ip)
         # if not a valid ip show the following error
         except socket.error:
             print ''
@@ -67,21 +68,14 @@ def vcenter_user_input():
         else:
             break
 
-    total_esxi_hosts = 0
-
-def esxi_user_input():
-
-    global total_esxi_hosts
-    global esxi_initial_ip_address
-    global esxi_host_ip
-
+def esxi_input():
 
 
     while True:
         print('')
-        total_esxi_hosts = raw_input('Enter the number of ESXi hosts you would like to check : ')
+        esxi_input.hosts = raw_input('Enter the number of ESXi hosts you would like to check: ')
         # Verify that the user enters a 1 digit organization code
-        if len(total_esxi_hosts) > 1 or total_esxi_hosts.isdigit() == False:
+        if len(esxi_input.hosts) > 1 or esxi_input.hosts.isdigit() == False:
             print('')
             print(' *** Error: Please enter a valid number ***')
             print('')
@@ -91,14 +85,14 @@ def esxi_user_input():
             break
 
     #region ESXi Port Scan
-    if int(total_esxi_hosts) >= 1:
+    if int(esxi_input.hosts) >= 1:
 
         while True:
             try:
                 print''
-                esxi_initial_ip_address = raw_input('Please enter the starting ESXi Host IP Address: ')
+                esxi_input.initial_ip = raw_input('Please enter the starting ESXi Host IP Address: ')
                 # Check for a valid IP Address
-                socket.inet_aton(esxi_initial_ip_address)
+                socket.inet_aton(esxi_input.initial_ip)
             # if not a valid ip show the following error
             except socket.error:
                 print ''
@@ -108,20 +102,17 @@ def esxi_user_input():
                 break
 
     #create the list that will house all of the ESXi IP Address
-    esxi_host_ip = []
+    esxi_input.ip = []
 
     #Add the first user defined ESXi Host IP Address to the list
-    esxi_host_ip.append(esxi_initial_ip_address)
+    esxi_input.ip.append(esxi_input.initial_ip)
 
     #region Define the variables that allow us to increase an IP
 
-    #Used in the function to automatically increased the IPs
-    esxi_increase_ip = esxi_initial_ip_address
 
-    # x.x.x.x string -> integer
-    ip2int = lambda ipstr: struct.unpack('!I', socket.inet_aton(ipstr))[0]
-    # x.x.x.x string -> integer
-    int2ip = lambda n: socket.inet_ntoa(struct.pack('!I', n))
+
+
+
 
     #endregion
 
@@ -132,7 +123,6 @@ def executing_script():
 
 
 
-#endregion
 
 print('')
 print('The following vSphere objects are currently supported:')
@@ -145,75 +135,23 @@ while True:
     object_to_scan = raw_input('Which object would you like to scan (vCenter, ESXi, Both): ').lower()
     if object_to_scan not in ['vcenter', 'esxi', 'both']:
         print('')
-        print('*** Error: Please enter "vCenter", "ESXi" , or "both". ***')
+        print('*** Error: Please enter "vCenter", "ESXi" , or "Both". ***')
         print('')
         continue
     else:
         break
 
 if object_to_scan == 'vcenter':
-    vcenter_user_input()
+    esxi_input.hosts = 0
+    vcenter_input()
     executing_script()
-
 elif object_to_scan == 'esxi':
-    esxi_user_input()
+    esxi_input()
     executing_script()
 else:
-    vcenter_user_input()
-    esxi_user_input()
+    vcenter_input()
+    esxi_input()
     executing_script()
-
-
-
-
-#region ESXi
-
-#region Ports required for ESXi 5.x
-esxi_5 = {'22': 'SSH Server',
-      '53': 'DNS Client',
-      '68': 'DHCP Client',
-      '80': 'Redirect Web Browser to HTTPS Server (443)',
-      '88': 'PAM Active Directory Authentication - Kerberos',
-      '111': 'NFS Client - RPC Portmapper',
-      '123': 'NTP Client',
-      '161': 'SNMP Polling',
-      '162': 'SNMP Trap Send',
-      '389': 'PAM Active Directory Authentication - Kerberos',
-      '427': 'CIM Service Location Protocol (SLP)',
-      '443': 'VI / vSphere Client to ESXi/ESX Host management connection',
-      '443': 'Host to host VM migration provisioning',
-      '445': 'PAM Active Directory Authentication',
-      '464': 'PAM Active Directory Authentication - Kerberos',
-      '514': 'Remote syslog logging',
-      '902': 'Host access to other hosts for migration and provisioning',
-      '902': 'vSphere Client access to virtual machine consoles(MKS)',
-      '902': '(UDP) Status update (heartbeat) connection from ESXi to vCenter Server',
-      '1024': 'Bi-directional communication on TCP/UDP porsts is required between the ESXi host and the AD Domain Controller',
-      '2049': 'Transactions from NFS storage devices',
-      '3260': 'Transactions to iSCSI storage devices',
-      '5900': 'RFP protocol which is used by management tools such as VNC',
-      '5988': 'CIM transactions over HTTP',
-      '5989': 'CIM XML transactions over HTTPS',
-      '8000': 'Requests from vMotion',
-      '8100': 'Traffic between hosts for vSphere Fault Tolerance (FT)',
-      '8182': 'Traffic between hosts for vSphere High Availability (HA)',
-      '8200': 'DVS Port Information',
-      '8301': 'DVS Portion Information',
-      '8302': 'Internal Communication Port'}
-#endregion
-
-if total_esxi_hosts > 0:
-
-    for x in range((int(total_esxi_hosts) - 1)):
-
-        esxi_ip()
-
-    for index, vsphere_object_ip_address in enumerate(esxi_host_ip):
-
-     port_check(esxi_5, vsphere_object_ip_address, 'ESXi')
-
-#endregion
-
 
 
 #region vCenter
@@ -261,11 +199,68 @@ if object_to_scan in ['vcenter', 'both']:
     #endregion
 
     #set the vsphere_object_ip_address to the vcenter IP for proper identification in the port check function
-    vsphere_object_ip_address = vcenter_ip_address
 
-    port_check(vcenter_5, vcenter_ip_address, 'vCenter')
+
+    port_check(vcenter_5, vcenter_input.ip, 'vCenter')
 
 #endregion
+
+#region ESXi
+
+#region Ports required for ESXi 5.x
+esxi_5 = {'22': 'SSH Server',
+      '53': 'DNS Client',
+      '68': 'DHCP Client',
+      '80': 'Redirect Web Browser to HTTPS Server (443)',
+      '88': 'PAM Active Directory Authentication - Kerberos',
+      '111': 'NFS Client - RPC Portmapper',
+      '123': 'NTP Client',
+      '161': 'SNMP Polling',
+      '162': 'SNMP Trap Send',
+      '389': 'PAM Active Directory Authentication - Kerberos',
+      '427': 'CIM Service Location Protocol (SLP)',
+      '443': 'VI / vSphere Client to ESXi/ESX Host management connection',
+      '443': 'Host to host VM migration provisioning',
+      '445': 'PAM Active Directory Authentication',
+      '464': 'PAM Active Directory Authentication - Kerberos',
+      '514': 'Remote syslog logging',
+      '902': 'Host access to other hosts for migration and provisioning',
+      '902': 'vSphere Client access to virtual machine consoles(MKS)',
+      '902': '(UDP) Status update (heartbeat) connection from ESXi to vCenter Server',
+      '1024': 'Bi-directional communication on TCP/UDP porsts is required between the ESXi host and the AD Domain Controller',
+      '2049': 'Transactions from NFS storage devices',
+      '3260': 'Transactions to iSCSI storage devices',
+      '5900': 'RFP protocol which is used by management tools such as VNC',
+      '5988': 'CIM transactions over HTTP',
+      '5989': 'CIM XML transactions over HTTPS',
+      '8000': 'Requests from vMotion',
+      '8100': 'Traffic between hosts for vSphere Fault Tolerance (FT)',
+      '8182': 'Traffic between hosts for vSphere High Availability (HA)',
+      '8200': 'DVS Port Information',
+      '8301': 'DVS Portion Information',
+      '8302': 'Internal Communication Port'}
+#endregion
+
+if esxi_input.hosts > 0:
+
+
+    for x in range((int(esxi_input.hosts) - 1)):
+
+        esxi__increase_ip()
+
+    for index, vsphere_object_ip_address in enumerate(esxi_input.ip):
+
+     port_check(esxi_5, vsphere_object_ip_address, 'ESXi')
+
+#endregion
+
+
+
+#determine if user is running Windows to keep terminal open
+
+if platform.system() == 'Windows':
+
+    raw_input('To exit hit enter:')
 
 
 
